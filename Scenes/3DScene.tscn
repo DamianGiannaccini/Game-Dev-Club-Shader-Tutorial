@@ -1,0 +1,90 @@
+[gd_scene load_steps=14 format=3 uid="uid://c6ikjcpp0krnd"]
+
+[ext_resource type="Shader" uid="uid://k4ento2mgeqt" path="res://Shaders/Water.gdshader" id="1_y2qhy"]
+[ext_resource type="Shader" uid="uid://j7rauugllocy" path="res://Shaders/VertexShader.gdshader" id="2_fdjd5"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_y2qhy"]
+noise_type = 3
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_fdjd5"]
+noise = SubResource("FastNoiseLite_y2qhy")
+seamless = true
+as_normal_map = true
+bump_strength = 1.5
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_78kbc"]
+noise_type = 3
+fractal_type = 2
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_cw375"]
+noise = SubResource("FastNoiseLite_78kbc")
+seamless = true
+as_normal_map = true
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_fdjd5"]
+noise_type = 3
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_78kbc"]
+noise = SubResource("FastNoiseLite_fdjd5")
+seamless = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fdjd5"]
+render_priority = 0
+shader = ExtResource("1_y2qhy")
+shader_parameter/albedo = Color(0, 0.32156864, 0.43137255, 1)
+shader_parameter/metallic = 0.0
+shader_parameter/roughness = 0.02
+shader_parameter/texture_normal = SubResource("NoiseTexture2D_fdjd5")
+shader_parameter/texture_normal2 = SubResource("NoiseTexture2D_cw375")
+shader_parameter/wave_direction = Vector2(2, 0)
+shader_parameter/wave_direction2 = Vector2(0, 1)
+shader_parameter/time_scale = 0.025
+shader_parameter/albedo_fresnel = Color(0, 0.4745098, 0.7647059, 1)
+shader_parameter/wave = SubResource("NoiseTexture2D_78kbc")
+shader_parameter/noise_scale = 10.0
+shader_parameter/height_scale = 0.15
+shader_parameter/color_deep = Color(7.2196127e-07, 0.31312597, 0.51487696, 1)
+shader_parameter/color_shallow = Color(1.0973811e-05, 0.5349951, 0.85834056, 1)
+shader_parameter/beers_law = 2.0
+shader_parameter/depth_offset = -0.75
+shader_parameter/edge_scale = 0.1
+shader_parameter/near = 1.0
+shader_parameter/far = 100.0
+shader_parameter/edge_color = Color(1, 1, 1, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_78kbc"]
+material = SubResource("ShaderMaterial_fdjd5")
+size = Vector2(5, 5)
+subdivide_width = 256
+subdivide_depth = 256
+orientation = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_y2qhy"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_78kbc"]
+render_priority = 0
+shader = ExtResource("2_fdjd5")
+shader_parameter/speed = 1.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_cw375"]
+material = SubResource("ShaderMaterial_78kbc")
+subdivide_width = 64
+subdivide_depth = 64
+
+[node name="Node3D" type="Node3D"]
+
+[node name="WaterMesh" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+mesh = SubResource("QuadMesh_78kbc")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.22930479, 0, 0, 0, 1.0000002, 0, 0, 0, 0.14246249, 0, -0.2749191, 0)
+mesh = SubResource("BoxMesh_y2qhy")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.8839452, 0.46759042, 0, -0.46759042, 0.8839452, 0, 0, 0)
+
+[node name="VertexMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.886842, 0, 0)
+mesh = SubResource("PlaneMesh_cw375")
