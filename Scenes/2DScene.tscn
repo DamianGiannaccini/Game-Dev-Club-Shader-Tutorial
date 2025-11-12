@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://cj83mcvumehld"]
+
+[ext_resource type="Shader" uid="uid://cdrr3rdfr4rxx" path="res://Shaders/RainbowShader.gdshader" id="1_hwa1n"]
+[ext_resource type="Texture2D" uid="uid://cvj2y64timifk" path="res://icon.svg" id="2_r1v2a"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_agyqu"]
+shader = ExtResource("1_hwa1n")
+shader_parameter/speed = 1.0
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_agyqu")
+texture = ExtResource("2_r1v2a")
