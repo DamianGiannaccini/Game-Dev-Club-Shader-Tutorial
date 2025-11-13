@@ -9,6 +9,10 @@ uniform float roughness: hint_range(0.0, 1.0) = 0.02;
 uniform sampler2D texture_normal;
 uniform sampler2D texture_normal2;
 
+//Test
+uniform sampler2D texture_normal3;
+uniform sampler2D texture_normal4;
+
 //Variables for animating the water
 uniform vec2 wave_direction = vec2(2.0, 0.0);
 uniform vec2 wave_direction2 = vec2(0.0, 1.0);
@@ -19,6 +23,7 @@ uniform vec3 albedo_fresnel: source_color;
 
 //Changing heights of vertexs
 uniform sampler2D wave;
+uniform sampler2D wave2; //test
 uniform float noise_scale = 10.0;
 uniform float height_scale = 0.15;
 
@@ -40,6 +45,9 @@ uniform float near = 1.0;
 uniform float far = 100.0;
 uniform vec3 edge_color: source_color;
 
+//Testing sea foam
+varying float wave_height;
+
 //Calculates the edges
 float edge(float depth){
 	depth = 1.0 - 2.0 * depth;
@@ -55,6 +63,10 @@ void vertex() {
 	//Sets height for each vertex
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	height = texture(wave, world_pos.xz / noise_scale + TIME * time_scale).r;
+	vec4 text1 = mix(texture(wave, world_pos.xz / noise_scale + TIME * time_scale), texture(wave2, world_pos.xz / noise_scale + TIME * time_scale), 0.3);
+	//height = text1.r;
+	wave_height = height;
+
 	VERTEX.y += height * height_scale;
 }
 
@@ -67,36 +79,39 @@ void fragment() {
 	float depth_blend = exp((-view.z + VERTEX.z + depth_offset) * -beers_law);
 	depth_blend = clamp(1.0 - depth_blend, 0.0, 1.0);
 	float depth_blend_power = clamp(pow(depth_blend, 2.5), 0.0, 1.0);
-	
+
 	//Calculate color change based on depth
 	vec3 screen_color = textureLod(SCREEN_TEXTURE, SCREEN_UV, depth_blend_power * 2.5).rgb;
 	vec3 depth_color = mix(color_shallow.rgb, color_deep.rgb, depth_blend_power);
 	vec3 color = mix(screen_color * depth_color, depth_color * 0.25, depth_blend_power * 0.5);
-	
+
 	//Edge foam
 	float z_depth = edge(texture(DEPTH_TEXTURE, SCREEN_UV).x);
 	float z_pos = edge(FRAGCOORD.z);
 	float z_dif = z_depth - z_pos;
 	vec3 depth_color_adj = mix(edge_color, color, step(edge_scale, z_dif));
-	
-	
+
+
 	//Time calculations for the wave normal map movement
 	vec2 time = (TIME * wave_direction) * time_scale;
 	vec2 time2 = (TIME * wave_direction2) * time_scale;
-	
+
 	//Mixes the 2 noise functions
+	vec3 normal_blend1 = mix(texture(texture_normal, world_pos.xz + time).rgb, texture(texture_normal2, world_pos.xz + time2).rgb, 0.5);
+	vec3 normal_blend2 = mix(texture(texture_normal3, world_pos.xz + time).rgb, texture(texture_normal4, world_pos.xz + time2).rgb, 0.5);
+	//vec3 normal_blend = mix(normal_blend1, normal_blend2, 0.5);
+
 	vec3 normal_blend = mix(texture(texture_normal, world_pos.xz + time).rgb, texture(texture_normal2, world_pos.xz + time2).rgb, 0.5);
-	
-	//Calculates fresnel and sets accordingly
 	float fresnel = fresnel(5.0, NORMAL, VIEW);
 	vec3 surface_color = mix(albedo, albedo_fresnel, fresnel);
-	
 
+	//test sea foam
+	vec3 foam_color = vec3(1.0);
+	float foam_factor = smoothstep(0.7, 0.9, wave_height);
 	//Sets all values
-	ALBEDO = clamp(surface_color + depth_color_adj, vec3(0.0), vec3(1.0));
+	ALBEDO = mix(clamp(surface_color + depth_color_adj, vec3(0.0), vec3(1.0)), foam_color, foam_factor);
 	//Abledo with depth before edge: ALBEDO = mix(surface_color, color, 0.75);
 	ROUGHNESS = roughness;
 	METALLIC = metallic;
 	NORMAL_MAP = normal_blend;
 }
-
